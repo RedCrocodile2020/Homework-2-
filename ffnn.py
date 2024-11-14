@@ -22,8 +22,8 @@ class FFNN(nn.Module):
         self.h = h
         self.W1 = nn.Linear(input_dim, h)
         self.activation = nn.ReLU()
-        self.W_hidden1 = nn.Linear(h, h)  # First additional hidden layer
-        self.W_hidden2 = nn.Linear(h, h)  # Second additional hidden layer
+        # self.W_hidden1 = nn.Linear(h, h)  # First additional hidden layer
+        # self.W_hidden2 = nn.Linear(h, h)  # Second additional hidden layer
         self.W2 = nn.Linear(h, 5)
         self.softmax = nn.LogSoftmax(dim=0)
         self.loss = nn.NLLLoss()
@@ -34,10 +34,10 @@ class FFNN(nn.Module):
     def forward(self, input_vector):
         # Forward pass through the first layer
         hidden_layer_output = self.activation(self.W1(input_vector))
-        # Forward pass through the first additional hidden layer
-        hidden_layer_output = self.activation(self.W_hidden1(hidden_layer_output))
-        # Forward pass through the second additional hidden layer
-        hidden_layer_output = self.activation(self.W_hidden2(hidden_layer_output))
+        # Forward pass through the first additional hidden layer (commented out)
+        # hidden_layer_output = self.activation(self.W_hidden1(hidden_layer_output))
+        # Forward pass through the second additional hidden layer (commented out)
+        # hidden_layer_output = self.activation(self.W_hidden2(hidden_layer_output))
         # Final output layer
         output_layer_output = self.W2(hidden_layer_output)
         # Obtain probability distribution
@@ -110,12 +110,14 @@ if __name__ == "__main__":
     # Option 3 will be the most time consuming, so we do not recommend starting with this
 
     print("========== Vectorizing data ==========")
+    vocab = make_vocab(train_data)
+    vocab, word2index, index2word = make_indices(vocab)
     train_data = convert_to_vector_representation(train_data, word2index)
     valid_data = convert_to_vector_representation(valid_data, word2index)
 
     # First test with a new hidden dimension size (e.g., 64)
     model = FFNN(input_dim=len(vocab), h=64)
-    optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
+    optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
     print("========== Training for {} epochs ==========".format(args.epochs))
 
     train_losses = []
@@ -130,7 +132,7 @@ if __name__ == "__main__":
         start_time = time.time()
         print("Training started for epoch {}".format(epoch + 1))
         random.shuffle(train_data)
-        minibatch_size = 16
+        minibatch_size = 32
         N = len(train_data)
         loss_total = 0
         loss_count = 0
